@@ -1,0 +1,3 @@
+﻿  ByteSender.cpp
+c:\users\jesse johnson\desktop\ar\telekinect\bytesender.cpp(84): warning C4302: 'type cast': truncation from 'const char *' to 'u_short'
+  telekinect.vcxproj -> C:\Users\Jesse Johnson\Desktop\AR\telekinect\Debug\telekinect.exe

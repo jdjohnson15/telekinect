@@ -8,9 +8,10 @@
 
 #include "resource.h"
 #include "NuiApi.h"
-#include "ImageRenderer.h"
 #include "ByteSender.h"
+#include "ImageRenderer.h"
 #include "lodepng.h"
+#include <thread> 
 #include <vector>
 #include <Winuser.h>
 //#include <system.net.socket>
@@ -60,6 +61,8 @@ public:
     /// <param name="nCmdShow"></param>
     int                     Run(HINSTANCE hInstance, int nCmdShow);
 
+	void foo();
+
 private:
 
 	char*					pngBits;
@@ -92,7 +95,8 @@ private:
     INuiSensor*             m_pNuiSensor;
 
 	//server object
-	//ByteSender*				server;
+	ByteSender*				server;
+	bool					connecting;
 
     // Direct2D
     ImageRenderer*          m_pDraw;
@@ -160,5 +164,5 @@ private:
 	/// <param name="lWidth">width (in pixels) of input image data</param>
 	/// <param name="lHeight">height (in pixels) of input image data</param>
 	/// <param name="wBitsPerPixel">bits per pixel of image data</param>
-	void					SmoothDepth(char* depthPNG, BYTE* pBitmapBits, LONG width, LONG height, NUI_LOCKED_RECT LockedRect, UINT smooth, UINT average);
+	void					SmoothDepth(char* depthPNG, BYTE* pBitmapBits, BYTE* displayPBits, LONG width, LONG height, NUI_LOCKED_RECT LockedRect, UINT smooth, UINT average);
 };

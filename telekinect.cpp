@@ -1,9 +1,4 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="ColorBasics.cpp" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
+﻿
 #include "stdafx.h"
 #include <strsafe.h>
 #include "telekinect.h"
@@ -47,7 +42,8 @@ telekinect::telekinect() :
 	m_pNuiSensor(NULL),
 	colorOffsetX(0),
 	colorOffsetY(0),
-	printPNG(false)
+	printPNG(false),
+	connecting(false)
 {
 	m_depthRGBX = new BYTE[480 * 640 * 4];
 	pngBits = new char[480 * 640 * 8];
@@ -80,8 +76,8 @@ telekinect::~telekinect()
 	m_pDraw2 = NULL;
 
 	//clean up server
-	//delete server;
-	//server = NULL;
+	delete server;
+	server = NULL;
 
     // clean up Direct2D
     SafeRelease(m_pD2DFactory);
@@ -341,8 +337,7 @@ LRESULT CALLBACK telekinect::DlgProc(HWND hWnd, UINT message, WPARAM wParam, LPA
             CreateFirstConnected();
 
 			//Create server 
-			//server = new ByteSender();
-			//SetNetworkStatus(server->init());
+			server = new ByteSender();
         }
         break;
 
@@ -589,7 +584,7 @@ void telekinect::ProcessDepth() {
 	if (LockedRect.Pitch != 0)
 	{
 
-		SmoothDepth(pngBits, dummy, 640, 480, LockedRect,1, 0);
+		SmoothDepth(pngBits, dummy, displayPBits, 640, 480, LockedRect,1, 0);
 		
 	}
 	
@@ -610,8 +605,11 @@ void telekinect::Render()
 	// Draw the data with Direct2D
 	m_pDraw->Draw(displayPBits, displayPSize);
 	m_pDraw2->Draw(m_depthRGBX, displayPSize);
-	
-	//SetNetworkStatus(server->connect());
+
+	//send image buffer (both color and depth) to remote client
+	server->sendBuffer(pngBits, sizeof(pngBits));
+
+
 
 	WCHAR statusMessage[cStatusMessageMaxLen];
 
@@ -779,7 +777,7 @@ HRESULT telekinect::SaveBitmapToFile(const unsigned char* pngBits, LONG lWidth, 
 /// <param name="LockedRect">bits per pixel of image data</param>
 /// <param name="smooth">bits per pixel of image data</param>
 /// <param name="average">bits per pixel of image data</param>
-void telekinect::SmoothDepth(char* depthPNG, BYTE* pBitmapBits, LONG width, LONG height, NUI_LOCKED_RECT LockedRect, UINT smooth, UINT average)
+void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits, LONG width, LONG height, NUI_LOCKED_RECT LockedRect, UINT smooth, UINT average)
 {
 	const int length = 480 * 640;
 	short depthArray[length];
@@ -952,93 +950,93 @@ void telekinect::SmoothDepth(char* depthPNG, BYTE* pBitmapBits, LONG width, LONG
 		if (printPNG) {
 			if (intensity == 0) { //if the image should be transparent 
 
-				depthPNG[depthIndex++] = 255; //// <- depth partition of png file
-				depthPNG[colorIndex + 2] = 255; //// <- color partition of png file
-				*(pBitmapBits++) = 255; //// <- depth image displayed in the window
+				pngBits[depthIndex++] = 255; //// <- depth partition of png file
+				pngBits[colorIndex + 2] = 255; //// <- color partition of png file
+				*(depthBits++) = 255; //// <- depth image displayed in the window
 				*(colorRGB++) = 255; //// <- color image displayed in the window
 				// Write out green byte
-				depthPNG[depthIndex++] = 255;
-				depthPNG[colorIndex + 1] = 255;
-				*(pBitmapBits++) = 255;
+				pngBits[depthIndex++] = 255;
+				pngBits[colorIndex + 1] = 255;
+				*(depthBits++) = 255;
 				*(colorRGB++) = 255;
 				// Write out red byte
-				depthPNG[depthIndex++] = 255;
-				depthPNG[colorIndex] = 255;
-				*(pBitmapBits++) = 255;
+				pngBits[depthIndex++] = 255;
+				pngBits[colorIndex] = 255;
+				*(depthBits++) = 255;
 				*(colorRGB++) = 255;
 				colorIndex += 3;
 				// write out alpha byte
-				depthPNG[depthIndex++] = 0;
-				depthPNG[colorIndex++] = 0;
-				*(pBitmapBits++) = 0;
+				pngBits[depthIndex++] = 0;
+				pngBits[colorIndex++] = 0;
+				*(depthBits++) = 0;
 				*(colorRGB++) = 0;
 			}
 			else { // process normally
 				   // Write out blue byte
-				depthPNG[depthIndex++] = 255 - intensity;
-				depthPNG[colorIndex + 2] = *(colorRGB++);
-				*(pBitmapBits++) = intensity;
+				pngBits[depthIndex++] = 255 - intensity;
+				pngBits[colorIndex + 2] = *(colorRGB++);
+				*(depthBits++) = intensity;
 
 				// Write out green byte
-				depthPNG[depthIndex++] = 0;
-				depthPNG[colorIndex + 1] = *(colorRGB++);
-				*(pBitmapBits++) = 0;
+				pngBits[depthIndex++] = 0;
+				pngBits[colorIndex + 1] = *(colorRGB++);
+				*(depthBits++) = 0;
 
 				// Write out red byte
-				depthPNG[depthIndex++] = intensity;
-				depthPNG[colorIndex] = *(colorRGB++);
-				*(pBitmapBits++) = 255 - intensity;
+				pngBits[depthIndex++] = intensity;
+				pngBits[colorIndex] = *(colorRGB++);
+				*(depthBits++) = 255 - intensity;
 				colorIndex += 3;
 				// write out alpha 
-				depthPNG[depthIndex++] = 255;
-				depthPNG[colorIndex++] = 255;
-				*(pBitmapBits++) = 255;
+				pngBits[depthIndex++] = 255;
+				pngBits[colorIndex++] = 255;
+				*(depthBits++) = 255;
 				*(colorRGB++) = 255;
 			}
 		}
-		else {
+		else { //write as bitmap
 			if (intensity == 0) {
-				depthPNG[depthIndex++] = 255; //// <- depth partition of png file
-				depthPNG[colorIndex + 2] = 255; //// <- color partition of png file
-				*(pBitmapBits++) = 255; //// <- depth image displayed in the window
+				pngBits[depthIndex++] = 255; //// <- depth partition of png file
+				pngBits[colorIndex + 2] = 255; //// <- color partition of png file
+				*(depthBits++) = 255; //// <- depth image displayed in the window
 				*(colorRGB++) = 255; //// <- color image displayed in the window
 									 // Write out green byte
-				depthPNG[depthIndex++] = 255;
-				depthPNG[colorIndex + 1] = 255;
-				*(pBitmapBits++) = 255;
+				pngBits[depthIndex++] = 255;
+				pngBits[colorIndex + 1] = 255;
+				*(depthBits++) = 255;
 				*(colorRGB++) = 255;
 				// Write out red byte
-				depthPNG[depthIndex++] = 255;
-				depthPNG[colorIndex] = 255;
-				*(pBitmapBits++) = 255;
+				pngBits[depthIndex++] = 255;
+				pngBits[colorIndex] = 255;
+				*(depthBits++) = 255;
 				*(colorRGB++) = 255;
 				colorIndex += 3;
 				// write out alpha byte
-				depthPNG[depthIndex++] = 0;
-				depthPNG[colorIndex++] = 0;
-				*(pBitmapBits++) = 0;
-				*(colorRGB++) = 255;
+				pngBits[depthIndex++] = 0;
+				pngBits[colorIndex++] = 0;
+				*(depthBits++) = 0;
+				*(colorRGB++) = 0;
 			}
 			else { // process normally
 				   // Write out blue byte
-				depthPNG[depthIndex++] = intensity;
-				depthPNG[colorIndex++] = *(colorRGB++);
-				*(pBitmapBits++) = intensity;
+				pngBits[depthIndex++] = intensity;
+				pngBits[colorIndex++] = *(colorRGB++);
+				*(depthBits++) = intensity;
 
 				// Write out green byte
-				depthPNG[depthIndex++] = 0;
-				depthPNG[colorIndex++] = *(colorRGB++);
-				*(pBitmapBits++) = 0;
+				pngBits[depthIndex++] = 0;
+				pngBits[colorIndex++] = *(colorRGB++);
+				*(depthBits++) = 0;
 
 				// Write out red byte
-				depthPNG[depthIndex++] = 255 - intensity;
-				depthPNG[colorIndex++] = *(colorRGB++);
-				*(pBitmapBits++) = 255 - intensity;
+				pngBits[depthIndex++] = 255 - intensity;
+				pngBits[colorIndex++] = *(colorRGB++);
+				*(depthBits++) = 255 - intensity;
 
 				// write out alpha 
-				depthPNG[depthIndex++] = 255;
-				depthPNG[colorIndex++] = 255;
-				*(pBitmapBits++) = 255;
+				pngBits[depthIndex++] = 255;
+				pngBits[colorIndex++] = 255;
+				*(depthBits++) = 255;
 				*(colorRGB++) = 255;
 			}
 		}

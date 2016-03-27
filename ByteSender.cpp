@@ -5,92 +5,38 @@
 ByteSender::ByteSender() {
 
 	ListenSocket = INVALID_SOCKET;
-	ClientSocket = INVALID_SOCKET;
+	init();
 }
 
 ByteSender::~ByteSender() {
 	// shutdown the send half of the connection since no more data will be sent
-	int iResult = shutdown(ClientSocket, SD_SEND);
+	int iResult = shutdown(ListenSocket, SD_SEND);
 	if (iResult == SOCKET_ERROR) {
 		StringCchPrintf(status, statusSize, L"shutdown failed: %d\n", WSAGetLastError());
-		closesocket(ClientSocket);
+		closesocket(ListenSocket);
 	}
 }
 
-WCHAR* ByteSender::connect()
+
+void  ByteSender::sendBuffer(char* buffer, size_t size)
 {
-	int iResult;
-	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-	if (iResult == SOCKET_ERROR) {
-		StringCchPrintf(status, statusSize, L"bind failed with error: %d\n", WSAGetLastError());
-		freeaddrinfo(result);
-		closesocket(ListenSocket);
-		WSACleanup();
-		return status;
+	//get address of client
+	char* recBuffer = "";
+	int recvlen = recvfrom(ListenSocket, recBuffer, size, 0, (struct sockaddr *)&remoteAddr, &addrLength);
+	StringCchPrintf(status, statusSize, L"received %d bytes\n", recvlen);
+	OutputDebugString(status);
+	if (recvlen > 0) {
+		recBuffer[recvlen] = 0;
+		StringCchPrintf(status, statusSize, L"received message: \"%s\"\n", recBuffer);
+		OutputDebugString(status);
 	}
-	freeaddrinfo(result);
-
-	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
-		StringCchPrintf(status, statusSize, L"Listen failed with error: %d\n", WSAGetLastError());
-		closesocket(ListenSocket);
-		WSACleanup();
-		return status;
-	}
-
-	// Accept a client socket
-	OutputDebugString(L"attempting handshake\n");
-	ClientSocket = accept(ListenSocket, NULL, NULL);
-	OutputDebugString(L"handshake successful\n");
-	if (ClientSocket == INVALID_SOCKET) {
-		StringCchPrintf(status, statusSize, L"accept failed: %d\n", WSAGetLastError());
-		closesocket(ListenSocket);
-		WSACleanup();
-		return status;
-	}
-	return L"connection successful";
+	sendto(ListenSocket, buffer, size, 0, (struct sockaddr *)&remoteAddr, addrLength);
 }
 
-WCHAR*  ByteSender::sendBuffer(const char* buffer, size_t size)
-{
-	char recvbuf[DEFAULT_BUFLEN];
-	int iResult, iSendResult;
-	int recvbuflen = DEFAULT_BUFLEN;
-
-	// Receive until the peer shuts down the connection
-	do {
-		
-		iResult = send(ClientSocket, buffer, iResult, 0);
-		if (iResult > 0) {
-			printf("Bytes received: %d\n", iResult);
-			StringCchPrintf(status, statusSize, L"Bytes received: %d\n", iResult);
-			OutputDebugString(status);
-			// Echo the buffer back to the sender
-			iSendResult = send(ClientSocket, recvbuf, iResult, 0);
-			if (iSendResult == SOCKET_ERROR) {
-				printf("send failed: %d\n", WSAGetLastError());
-				StringCchPrintf(status, statusSize, L"send failed: %d\n", WSAGetLastError());
-				closesocket(ClientSocket);
-				WSACleanup();
-				return status;
-			}
-			printf("Bytes sent: %d\n", iSendResult);
-			StringCchPrintf(status, statusSize, L"send failed: %d\n", WSAGetLastError());
-		}
-		else if (iResult == 0)
-		StringCchPrintf(status, statusSize, L"Connection closing...\n");
-		else {
-			StringCchPrintf(status, statusSize, L"recv failed: %d\n", WSAGetLastError());
-			closesocket(ClientSocket);
-			WSACleanup();
-			return status;
-		}
-
-	} while (iResult > 0);
-
-}
 
 WCHAR* ByteSender::init()
 {
+	/*
 	int iResult;
 
 	// Initialize Winsock
@@ -122,5 +68,25 @@ WCHAR* ByteSender::init()
 		WSACleanup();
 		return status;
 	}
-	return L"server initialized, waiting for handshake";
+	*/
+
+	if ((ListenSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+		perror("cannot create socket");
+		return 0;
+	}
+	struct sockaddr_in localAddr;
+	addrLength = sizeof(remoteAddr);
+
+
+	memset((char *)&localAddr, 0, sizeof(localAddr));
+	localAddr.sin_family = AF_INET;
+	localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	localAddr.sin_port = htons((u_short)DEFAULT_PORT);
+
+	if (bind(ListenSocket, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
+		perror("bind failed");
+		return 0;
+	}
+	connecting = true;
+	return L"server initialized, sending image data";
 }
