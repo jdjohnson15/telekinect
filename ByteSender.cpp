@@ -15,28 +15,28 @@ ByteSender::~ByteSender() {
 		StringCchPrintf(status, statusSize, L"shutdown failed: %d\n", WSAGetLastError());
 		closesocket(ListenSocket);
 	}
+	WSACleanup();
 }
 
 
 void  ByteSender::sendBuffer(char* buffer, size_t size)
 {
 	//get address of client
-	char* recBuffer = "";
-	int recvlen = recvfrom(ListenSocket, recBuffer, size, 0, (struct sockaddr *)&remoteAddr, &addrLength);
-	StringCchPrintf(status, statusSize, L"received %d bytes\n", recvlen);
-	OutputDebugString(status);
+	char recBuffer[1024];
+	int recvlen = recvfrom(ListenSocket, recBuffer, sizeof(recBuffer), 0, (struct sockaddr *)&remoteAddr, &addrLength);
+	//StringCchPrintf(status, statusSize, L"received %d bytes\n", recvlen);
+	//OutputDebugString(status);
 	if (recvlen > 0) {
 		recBuffer[recvlen] = 0;
 		StringCchPrintf(status, statusSize, L"received message: \"%s\"\n", recBuffer);
 		OutputDebugString(status);
 	}
-	sendto(ListenSocket, buffer, size, 0, (struct sockaddr *)&remoteAddr, addrLength);
+	sendto(ListenSocket, recBuffer, sizeof(recBuffer), 0, (struct sockaddr *)&remoteAddr, addrLength);
 }
 
 
 WCHAR* ByteSender::init()
 {
-	/*
 	int iResult;
 
 	// Initialize Winsock
@@ -46,47 +46,44 @@ WCHAR* ByteSender::init()
 		return status;
 	}
 
-	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
+	char buffer[256];
+	ZeroMemory(&serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(DEFAULT_PORT);
 	//hints.ai_flags = AI_PASSIVE;
 
-	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-	if (iResult != 0) {
-		StringCchPrintf(status, statusSize, L"getaddrinfo failed: %d\n", WSAGetLastError());
-		WSACleanup();
-		return status;
-	}
+	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+		OutputDebugString(L"ERROR on binding\n");
 
+	listen(sockfd, 5);
 	
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
-	if (ListenSocket == INVALID_SOCKET) {
-		StringCchPrintf(status, statusSize, L"Error at socket(): %d\n", WSAGetLastError());
-		freeaddrinfo(result);
-		WSACleanup();
-		return status;
-	}
-	*/
+	clientLength = sizeof(client_addr);
+	//while (newsockfd < 0) {
+		OutputDebugString(L"waiting on accept\n");
+		newsockfd = accept(sockfd, (struct sockaddr *) &client_addr, &clientLength);
+	//}
 
-	if ((ListenSocket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("cannot create socket");
-		return 0;
-	}
-	struct sockaddr_in localAddr;
-	addrLength = sizeof(remoteAddr);
+	memset(buffer, 0, 2555);
+
+	int n = recv(newsockfd, buffer, 2554, MSG_WAITALL);
+
+	if (n < 0)
+		OutputDebugString(L"ERROR reading from socket");
+
+	StringCchPrintf(status, statusSize, L"received message: \"%s\"\n", buffer);
+	OutputDebugString(status);
 
 
-	memset((char *)&localAddr, 0, sizeof(localAddr));
-	localAddr.sin_family = AF_INET;
-	localAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	localAddr.sin_port = htons((u_short)DEFAULT_PORT);
+	n = send(newsockfd, "I got your message", 18, MSG_DONTROUTE);
 
-	if (bind(ListenSocket, (struct sockaddr *)&localAddr, sizeof(localAddr)) < 0) {
-		perror("bind failed");
-		return 0;
-	}
-	connecting = true;
+	if (n < 0)
+		OutputDebugString(L"ERROR writing to socket");
+
+	closesocket(newsockfd);
+	closesocket(sockfd);
+
 	return L"server initialized, sending image data";
 }
+

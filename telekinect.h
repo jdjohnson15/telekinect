@@ -165,4 +165,6 @@ private:
 	/// <param name="lHeight">height (in pixels) of input image data</param>
 	/// <param name="wBitsPerPixel">bits per pixel of image data</param>
 	void					SmoothDepth(char* depthPNG, BYTE* pBitmapBits, BYTE* displayPBits, LONG width, LONG height, NUI_LOCKED_RECT LockedRect, UINT smooth, UINT average);
+
+	int startServer();
 };

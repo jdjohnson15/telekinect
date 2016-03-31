@@ -3,8 +3,13 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 #include <strsafe.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
 
-#define DEFAULT_PORT "27160"
+
+#define DEFAULT_PORT 27160
 #define DEFAULT_BUFLEN 512
 
 class ByteSender {
@@ -16,11 +21,15 @@ public:
 
 	void sendBuffer(char* buffer, size_t size);
 
+	
+
 private:
 
-	struct addrinfo *result = NULL, *ptr = NULL, hints;
-
 	WCHAR* init();
+
+	struct sockaddr_in serv_addr, client_addr;
+	int sockfd, newsockfd;
+	socklen_t clientLength;
 
 	WSADATA wsaData;
 	bool connecting;
