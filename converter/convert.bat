@@ -1,0 +1,1 @@
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2Exe.exe" /in convert.au3 /out convert.exe /icon convert.ico /unicode /console
