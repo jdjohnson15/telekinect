@@ -1,29 +1,5 @@
-﻿  telekinect.cpp
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(389): warning C4474: 'swprintf_s' : too many arguments passed for format string
-  c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(389): note: placeholders and their parameters expect 0 variadic arguments, but 1 were provided
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(604): warning C4101: 'hr': unreferenced local variable
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(954): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(955): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(957): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(959): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(960): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(962): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(964): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(965): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(967): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(992): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(993): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(995): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1000): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1001): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1003): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1005): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1006): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1008): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1010): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1011): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1013): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1038): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1039): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1041): warning C4309: '=': truncation of constant value
+﻿  ByteSender.cpp
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  telekinect.cpp
   telekinect.vcxproj -> C:\Users\Jesse Johnson\Desktop\ar\telekinect\Debug\telekinect.exe

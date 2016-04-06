@@ -5,15 +5,18 @@
 //------------------------------------------------------------------------------
 
 #pragma once
-
+#include "ByteSender.h"
+#include "globals.h"
+#include "ImageRenderer.h"
 #include "resource.h"
 #include "NuiApi.h"
-#include "ByteSender.h"
-#include "ImageRenderer.h"
 #include "lodepng.h"
 #include <thread> 
 #include <vector>
 #include <Winuser.h>
+#include <time.h>
+#include <thread>
+#include <chrono>
 //#include <system.net.socket>
 
 class telekinect
@@ -61,7 +64,8 @@ public:
     /// <param name="nCmdShow"></param>
     int                     Run(HINSTANCE hInstance, int nCmdShow);
 
-	void foo();
+	void launchServer();
+	void processData();
 
 private:
 
@@ -96,7 +100,8 @@ private:
 
 	//server object
 	ByteSender*				server;
-	bool					connecting;
+	enum					Connecting{NO_ATTEMPT, ATTEMPTING, SUCCESSFUL};
+	Connecting				netstatus;
 
     // Direct2D
     ImageRenderer*          m_pDraw;
@@ -166,5 +171,4 @@ private:
 	/// <param name="wBitsPerPixel">bits per pixel of image data</param>
 	void					SmoothDepth(char* depthPNG, BYTE* pBitmapBits, BYTE* displayPBits, LONG width, LONG height, NUI_LOCKED_RECT LockedRect, UINT smooth, UINT average);
 
-	int startServer();
 };
