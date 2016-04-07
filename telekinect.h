@@ -100,6 +100,7 @@ private:
 
 	//server object
 	ByteSender*				server;
+	std::thread				connetionAttempt;
 	enum					Connecting{NO_ATTEMPT, ATTEMPTING, SUCCESSFUL};
 	Connecting				netstatus;
 

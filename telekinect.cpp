@@ -75,6 +75,9 @@ telekinect::~telekinect()
 	delete m_pDraw2;
 	m_pDraw2 = NULL;
 
+	if (netstatus == SUCCESSFUL)
+		connetionAttempt.join();
+
 	//clean up server
 	//delete server;
 	//server = NULL;
@@ -606,12 +609,11 @@ void telekinect::Render()
 
 	//send image buffer (both color and depth) to remote client
 	//server->sendBuffer(pngBits, sizeof(pngBits));
-
+	
 	if (netstatus == NO_ATTEMPT)
-		std::thread connetionAttempt(&telekinect::launchServer, this);
+		connetionAttempt = std::thread(&telekinect::launchServer, this);
 
-	if (netstatus == ATTEMPTING)
-		std::thread processData(&telekinect::processData, this);
+	Globals::data = pngBits; //this puts all of the kinect data into the global buffer so all the connected clients can see it.
 
 	WCHAR statusMessage[cStatusMessageMaxLen];
 
@@ -1050,7 +1052,6 @@ void telekinect::launchServer()
 	Globals::data = (char*)malloc(sizeof(char) * (DEFAULT_SENDBUFLEN + 1)); //allocate memory on the heap to allow multiple client threads to access same buffer 
 	netstatus = ATTEMPTING;
 	server = new ByteSender();
-	SetNetworkStatus(L"server launched successfully");
 	netstatus = SUCCESSFUL;
 }
 

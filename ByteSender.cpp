@@ -132,7 +132,7 @@ bool ByteSender::SendDataToClient(SOCKET socket)
 			else iSendResult = send(socket, recvbuf, iResult, 0); //only this sends back the correct stuff right now
 			
 			if (iSendResult == SOCKET_ERROR) {
-				printf("send failed with error: %d\n", WSAGetLastError());
+				printf("send failed with error: %d\n", WSAGetLastError()); 
 				return false;
 			}
 			printf("Bytes sent: %d\n", iSendResult);
@@ -329,8 +329,9 @@ WCHAR* ByteSender::init()
 		OutputDebugString(status);
 
 		// Accept a client socket
-		ClientSockets[threadCount] = accept(ListenSocket, NULL, NULL); ///////this is having a problem. It doesnt think clientsockets are sockets! 
+		ClientSockets[threadCount] = accept(ListenSocket, NULL, NULL); 
 		if (ClientSockets[threadCount] != INVALID_SOCKET) {
+			OutputDebugString(L"client connected\n");
 			//start separate threads to handle multiple clients
 			t[threadCount] = std::thread(&ByteSender::ClientHandler, this, ClientSockets[threadCount]);
 			//t.join();
