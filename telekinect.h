@@ -67,6 +67,9 @@ public:
 	void launchServer();
 	void processData();
 
+	//////for debug purposes
+	WCHAR status[DEFAULT_SENDBUFLEN];
+
 private:
 
 	char*					pngBits;

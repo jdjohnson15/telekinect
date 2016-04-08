@@ -1,2 +1,6 @@
 ﻿  ByteSender.cpp
-  telekinect.vcxproj -> C:\Users\Jesse Johnson\Desktop\ar\telekinect\Debug\telekinect.exe
+c:\users\jesse johnson\desktop\ar\telekinect\bytesender.cpp(80): warning C4996: 'gethostbyname': Use getaddrinfo() or GetAddrInfoW() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  c:\program files (x86)\windows kits\8.1\include\um\winsock2.h(2238): note: see declaration of 'gethostbyname'
+c:\users\jesse johnson\desktop\ar\telekinect\bytesender.cpp(89): warning C4996: 'inet_ntoa': Use inet_ntop() or InetNtop() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  c:\program files (x86)\windows kits\8.1\include\um\winsock2.h(1868): note: see declaration of 'inet_ntoa'
+  telekinect.vcxproj -> C:\Users\Jesse Johnson\Desktop\AR\telekinect\Debug\telekinect.exe

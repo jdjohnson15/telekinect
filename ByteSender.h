@@ -7,7 +7,7 @@
 #include "globals.h"
 
 #define DEFAULT_PORT "27160"
-#define THREAD_MAX 3
+#define THREAD_MAX 100
 
 class ByteSender {
 

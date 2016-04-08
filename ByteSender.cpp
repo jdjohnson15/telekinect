@@ -67,8 +67,31 @@ WCHAR* ByteSender::SetupListener()
 		OutputDebugString(status);
 		return status;
 	}
+	//SOCKADDR serverAddr;
+	//int serverAddrSize;
+	//getsockname(ListenSocket, &serverAddr, &serverAddrSize);
+	char hostname[80];
+	if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR) {
+		StringCchPrintf(status, statusSize, L"get hostname failed\n");
+		OutputDebugString(status);
+		return status;
+	}
 
-	return L"Setup complete";
+	struct hostent *phe = gethostbyname(hostname);
+	if (phe == 0) {
+		return (L"bad host lookup\n");
+	}
+	StringCchPrintf(status, statusSize, L"Server setup complete.\n Server address: %d\n", hostname);
+	OutputDebugString(status);
+	for (int i = 0; phe->h_addr_list[i] != 0; ++i) {
+		struct in_addr addr;
+		memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
+		StringCchPrintf(status, statusSize, L"address: %d\n", inet_ntoa(addr));
+		OutputDebugString(status); 
+	}
+
+	
+	return status;
 }
 //
 ////// AcceptConnections /////////////////////////////////////////////////
@@ -125,12 +148,17 @@ bool ByteSender::SendDataToClient(SOCKET socket)
 			//process what the client is receiving:
 			//recvbuf[iResult] = 0; //marks the end of the char array (not working right now)
 			//printf("Bytes received: %d, content:\"%s\", conten len:%d, msg len: %d\n", iResult, recvbuf,strlen(recvbuf), strlen(Globals::data));
-			if (strcmp(recvbuf, "sendMeData") == 0) {
+
+			/*if (strcmp(recvbuf, "sendMeData") == 0) {
 				printf("sending back global data");
-				iSendResult = send(socket, Globals::data, strlen(Globals::data) + 1, 0);
+				iSendResult = send(socket, Globals::data, strlen(Globals::data), 0);
 			}
-			else iSendResult = send(socket, recvbuf, iResult, 0); //only this sends back the correct stuff right now
+			else */
+
 			
+			if (recvbuf[0] == 0x61)
+				iSendResult = send(socket, Globals::data, DEFAULT_SENDBUFLEN, 0);
+
 			if (iSendResult == SOCKET_ERROR) {
 				printf("send failed with error: %d\n", WSAGetLastError()); 
 				return false;

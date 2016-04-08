@@ -47,6 +47,9 @@ telekinect::telekinect() :
 {
 	m_depthRGBX = new BYTE[480 * 640 * 4];
 	pngBits = new char[480 * 640 * 8];
+	Globals::data = new char[480 * 640 * 8]; //allocate memory on the heap to allow multiple client threads to access same buffer 
+	StringCchPrintf(status, sizeof(status), L"\======init size:%d\n", sizeof(*Globals::data));
+	OutputDebugString(status);
 
 }
 
@@ -74,6 +77,9 @@ telekinect::~telekinect()
     m_pDraw = NULL;
 	delete m_pDraw2;
 	m_pDraw2 = NULL;
+	delete Globals::data;
+	delete pngBits;
+
 
 	if (netstatus == SUCCESSFUL)
 		connetionAttempt.join();
@@ -609,11 +615,13 @@ void telekinect::Render()
 
 	//send image buffer (both color and depth) to remote client
 	//server->sendBuffer(pngBits, sizeof(pngBits));
+
+	processData(); //this puts all of the kinect data into the global buffer so all the connected clients can see it.
 	
 	if (netstatus == NO_ATTEMPT)
 		connetionAttempt = std::thread(&telekinect::launchServer, this);
 
-	Globals::data = pngBits; //this puts all of the kinect data into the global buffer so all the connected clients can see it.
+	
 
 	WCHAR statusMessage[cStatusMessageMaxLen];
 
@@ -1004,7 +1012,7 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 				pngBits[colorIndex + 2] = 255; //// <- color partition of png file
 				*(depthBits++) = 255; //// <- depth image displayed in the window
 				*(colorRGB++) = 255; //// <- color image displayed in the window
-									 // Write out green byte
+				// Write out green byte
 				pngBits[depthIndex++] = 255;
 				pngBits[colorIndex + 1] = 255;
 				*(depthBits++) = 255;
@@ -1049,7 +1057,9 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 
 void telekinect::launchServer()
 {
-	Globals::data = (char*)malloc(sizeof(char) * (DEFAULT_SENDBUFLEN + 1)); //allocate memory on the heap to allow multiple client threads to access same buffer 
+	StringCchPrintf(status, sizeof(status), L"\launch size:%d\n", sizeof(*Globals::data));
+	OutputDebugString(status);
+
 	netstatus = ATTEMPTING;
 	server = new ByteSender();
 	netstatus = SUCCESSFUL;
@@ -1058,6 +1068,9 @@ void telekinect::launchServer()
 
 void telekinect::processData()
 {
-	Globals::data = pngBits;
-	printf("%s\n", Globals::data);
+	for (int i = 0; i < DEFAULT_SENDBUFLEN; ++i){
+		Globals::data[i] = pngBits[i];
+	}
+	StringCchPrintf(status, sizeof(status), L"test: %x\n", reinterpret_cast<const unsigned char*>(Globals::data[55]));
+	//OutputDebugString(status);
 }
