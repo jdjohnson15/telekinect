@@ -884,7 +884,7 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 					}
 
 
-					if (innerBandCount >= 1 || outerBandCount >= 4)
+					if (innerBandCount >= 1 || outerBandCount >= 2)
 					{
 						short frequency = 0;
 						short depth = 0;
@@ -949,7 +949,7 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 	int depthIndex = 480 * 640 * 4;
 	int colorIndex = 0;
 	char* colorRGB = (char*)displayPBits;
-	UINT range = maxRange - minRange;
+	USHORT range = maxRange - minRange;
 	if (range <= 0)
 		range = 1;
 	while (index < length)
@@ -960,9 +960,73 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 		depth -= minRange;
 
 
-		//BYTE intensity = static_cast<BYTE>(depth < (short)DEPTH_SLIDER_MIN_MM || depth > (short)DEPTH_SLIDER_MAX_MM ? 0 : 255 - (256 * depth / 0x0fa0));
-		BYTE intensity = static_cast<BYTE>(depth < 0 || depth >(short)range ? 0 : 255 - (256 * depth / range));
+		int intensity = depth < 0 || depth > range ? 0 : 765 - (765 * depth / range);
+		//BYTE intensity = static_cast<BYTE>(depth < 0 || depth >(short)range ? 0 : 255 - (256 * depth / range));
 		//BYTE intensity = static_cast<BYTE>(depth >= 100 && depth <= 4095 ? depth % 256 : 0);
+
+
+		if (intensity == 0) { //if the image should be transparent 
+
+			pngBits[depthIndex++] = 255; //// <- depth partition of png file
+			pngBits[colorIndex + 2] = 255; //// <- color partition of png file
+			*(depthBits++) = 255; //// <- depth image displayed in the window
+			*(colorRGB++) = 255; //// <- color image displayed in the window
+								 // Write out green byte
+			pngBits[depthIndex++] = 255;
+			pngBits[colorIndex + 1] = 255;
+			*(depthBits++) = 255;
+			*(colorRGB++) = 255;
+			// Write out red byte
+			pngBits[depthIndex++] = 255;
+			pngBits[colorIndex] = 255;
+			*(depthBits++) = 255;
+			*(colorRGB++) = 255;
+			colorIndex += 3;
+			// write out alpha byte
+			pngBits[depthIndex++] = 0;
+			pngBits[colorIndex++] = 0;
+			*(depthBits++) = 0;
+			*(colorRGB++) = 0;
+		}
+		else { // process normally
+			   
+			BYTE r, g, b;
+			if (intensity > 510) {
+				r = 0; g = 0; b = intensity - 510;
+			}
+			else if (intensity > 255) {
+				r = 0; g = intensity -255; b = 0;
+			}
+			else {	
+				r = intensity; g = 0; b = 0;
+			}
+
+			// Write out blue byte
+			pngBits[depthIndex++] = r;
+			pngBits[colorIndex + 2] = *(colorRGB++);
+			*(depthBits++) = b;
+
+			// Write out green byte
+			pngBits[depthIndex++] = g;
+			pngBits[colorIndex + 1] = *(colorRGB++);
+			*(depthBits++) = g;
+
+			// Write out red byte
+			pngBits[depthIndex++] = b;
+			pngBits[colorIndex] = *(colorRGB++);
+			*(depthBits++) = r;
+			colorIndex += 3;
+			// write out alpha 
+			pngBits[depthIndex++] = 255;
+			pngBits[colorIndex++] = 255;
+			*(depthBits++) = 255;
+			*(colorRGB++) = 255;
+		}
+		//*(pngBits)++ = minRange;
+		//*(pngBits)++;
+		//*(pngBits)++ = maxRange;
+
+		/*
 		if (printPNG) {
 			if (intensity == 0) { //if the image should be transparent 
 
@@ -1035,9 +1099,9 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 			}
 			else { // process normally
 				   // Write out blue byte
-				pngBits[depthIndex++] = intensity;
+				pngBits[depthIndex++] = 255 - intensity;
 				pngBits[colorIndex++] = *(colorRGB++);
-				*(depthBits++) = intensity;
+				*(depthBits++) = 255 - intensity;
 
 				// Write out green byte
 				pngBits[depthIndex++] = 0;
@@ -1045,9 +1109,9 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 				*(depthBits++) = 0;
 
 				// Write out red byte
-				pngBits[depthIndex++] = 255 - intensity;
+				pngBits[depthIndex++] = intensity;
 				pngBits[colorIndex++] = *(colorRGB++);
-				*(depthBits++) = 255 - intensity;
+				*(depthBits++) = intensity;
 
 				// write out alpha 
 				pngBits[depthIndex++] = 255;
@@ -1055,7 +1119,7 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 				*(depthBits++) = 255;
 				*(colorRGB++) = 255;
 			}
-		}
+		}*/
 	}
 }
 
