@@ -142,7 +142,7 @@ private:
 	/// <summary>
 	/// tries to better allign the color and depth images
 	/// </summary>
-	void					mapColorToDepth();
+	void					mapColorToDepth(NUI_LOCKED_RECT LockedRect);
 
 	/// <summary>
 	/// Handle drawing content on the screen and exporting files

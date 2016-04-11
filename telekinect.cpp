@@ -608,38 +608,96 @@ ReleaseFrame:
 	m_pNuiSensor->NuiImageStreamReleaseFrame(m_pDepthStreamHandle, &imageFrame);
 }
 
-void telekinect::mapColorToDepth()
+void telekinect::mapColorToDepth(NUI_LOCKED_RECT LockedRect)
 {
-	INuiCoordinateMapper* coordMapper;
-
-	// Get coordinate mapper
-	m_pSensor->NuiGetCoordinateMapper(&coordMapper);
-
-	NUI_DEPTH_IMAGE_POINT* depthPoints = new NUI_DEPTH_IMAGE_POINT[640 * 480];
-
-	HRESULT result = coordMapper->MapColorFrameToDepthFrame(NUI_IMAGE_TYPE_COLOR, NUI_IMAGE_RESOLUTION_640x480, NUI_IMAGE_RESOLUTION_640x480, 640 * 480, reinterpret_cast(depthData), 640 * 480, depthPoints);
-	if (FAILED(result))
-	{
-		return false;
-	}
-
-	int pos = 0;
-	int* colorRun = reinterpret_cast(colorData);
-	int* mappedRun = reinterpret_cast(mappedData);
+	/*
+	int cpos = 0;
+	int dpos = 0;
+	byte* colorRun = displayPBits;
+	byte* mappedColor = new byte[640 * 480];
 
 	// For each pixel of new color frame
-	for (int i = 0; i < 640 * 480; ++i)
+	for (int i = 0; i < 640; ++i)
 	{
-		// Find the corresponding pixel in original color frame from depthPoints
-		pos = (depthPoints[i].y * 640) + depthPoints[i].x;
-
-		// Set pixel value if it's within frame boundaries
-		if (pos < 640 * 480)
+		for (int j = 0; j < 480; ++j)
 		{
-			mappedRun[i] = colorRun[pos];
+			int cx = (((i + 10 - 320) * 241) >> 8) + 640;
+			int cy = (((j + 30 - 240) * 240) >> 8) + 480;
+
+			cpos = cy * 640 + cx;
+			dpos = j * 640 + i;
+			if (cpos < 640 * 480)
+			{
+				mappedColor[dpos] = colorRun[cpos];
+			}
+			/*
+			// Find the corresponding pixel in original color frame from depthPoints
+			pos = (depthPoints[i].y * 640) + depthPoints[i].x;
+
+			// Set pixel value if it's within frame boundaries
+			if (pos < 640 * 480)
+			{
+				mappedColor[i] = colorRun[pos];
+			}
 		}
 	}
+	for (int i = 0; i < 640 * 480; ++i)
+		displayPBits[i] = mappedColor[i];*/
+	
 
+	LONG* colorCoordinates = (LONG*)malloc(sizeof(LONG) * 640 * 480 * 2);
+	// Make sure we've received valid data
+	if (LockedRect.Pitch != 0)
+	{
+		// Find the location in the color image corresponding to the depth image
+		m_pNuiSensor->NuiImageGetColorPixelCoordinateFrameFromDepthPixelFrameAtResolution(
+			NUI_IMAGE_RESOLUTION_640x480,
+			NUI_IMAGE_RESOLUTION_640x480,
+			640 * 480,
+			(USHORT*)LockedRect.pBits,
+			(640 * 480) * 2,
+			colorCoordinates);
+
+		byte* colorFrame = displayPBits;
+		byte* mappedColor = new byte[640 * 480*4];
+		for (int x = 0; x < 640; ++x)
+		{
+			for (int y = 0; y < 480; ++y)
+			{
+				int depthIndex = (y) * 640 + (x);
+
+				// extracting color coordinates mapped from the depth position (depthIndex)
+				LONG colorForDepthX = colorCoordinates[depthIndex * 2];
+				LONG colorForDepthY = colorCoordinates[depthIndex * 2 + 1];
+
+				// check if the color coordinates lie within the range of the color map
+				if (colorForDepthX >= 0 && colorForDepthX < 640 && colorForDepthY >= 0 && colorForDepthY < 480)
+				{
+					// calculate index in the color image
+					int colorIndex = colorForDepthY * (640 * 4) + (colorForDepthX * 4);
+					int m_ColorIndex = (y)*(640 * 4) + (x) * 4;
+
+					mappedColor[m_ColorIndex] = colorFrame[colorIndex];
+					mappedColor[m_ColorIndex + 1] = colorFrame[colorIndex + 1];
+					mappedColor[m_ColorIndex + 2] = colorFrame[colorIndex + 2];
+					mappedColor[m_ColorIndex + 3] = colorFrame[colorIndex + 3];
+				}
+			}
+		}
+		WCHAR status[cStatusMessageMaxLen];
+		byte* dummy = displayPBits;
+		for (int i = 0; i < 640 * 480 * 4; ++i) {
+			if (i == 55) {
+			}
+			*(dummy)++ = mappedColor[i];
+		}
+		free(mappedColor);
+
+
+
+	}
+	free(colorCoordinates);
+	
 }
 
 void telekinect::Render()
@@ -838,6 +896,10 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 	const NUI_DEPTH_IMAGE_PIXEL * pBufferRun = reinterpret_cast<const NUI_DEPTH_IMAGE_PIXEL *>(LockedRect.pBits);
 	const NUI_DEPTH_IMAGE_PIXEL * pBufferEnd = pBufferRun + (cColorWidth * cColorHeight);
 	int index = 0;
+
+	if (printPNG)
+		mapColorToDepth(LockedRect);
+
 	// Process each pixel
 	while (pBufferRun < pBufferEnd)
 	{

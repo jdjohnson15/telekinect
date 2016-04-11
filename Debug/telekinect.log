@@ -1,18 +1,19 @@
 ﻿  telekinect.cpp
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(53): warning C4129: '=': unrecognized character escape sequence
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(397): warning C4474: 'swprintf_s' : too many arguments passed for format string
-  c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(397): note: placeholders and their parameters expect 0 variadic arguments, but 1 were provided
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(613): warning C4101: 'hr': unreferenced local variable
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(970): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(971): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(973): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(975): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(976): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(978): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(980): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(981): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(983): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(1020): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(1021): warning C4309: '=': truncation of constant value
-c:\users\jesse johnson\desktop\telekinect-master\telekinect.cpp(1023): warning C4309: '=': truncation of constant value
-  telekinect.vcxproj -> C:\Users\Jesse Johnson\Desktop\telekinect-master\Debug\telekinect.exe
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(53): warning C4129: '=': unrecognized character escape sequence
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(397): warning C4474: 'swprintf_s' : too many arguments passed for format string
+  c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(397): note: placeholders and their parameters expect 0 variadic arguments, but 1 were provided
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(687): warning C4101: 'status': unreferenced local variable
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(705): warning C4101: 'hr': unreferenced local variable
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1066): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1067): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1069): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1071): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1072): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1074): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1076): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1077): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1079): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1116): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1117): warning C4309: '=': truncation of constant value
+c:\users\jesse johnson\desktop\ar\telekinect\telekinect.cpp(1119): warning C4309: '=': truncation of constant value
+  telekinect.vcxproj -> C:\Users\Jesse Johnson\Desktop\AR\telekinect\Debug\telekinect.exe
