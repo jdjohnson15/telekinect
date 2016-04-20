@@ -74,6 +74,8 @@ private:
 
 	char*					pngBits;
 
+	char*					tempBuffer;				
+
 	bool					printPNG;
 
 	BYTE*					m_depthRGBX;

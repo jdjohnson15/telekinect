@@ -5,7 +5,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 ByteSender::ByteSender() {
-
+	ready = false;
 	ListenSocket = INVALID_SOCKET;
 	init();
 }
@@ -17,6 +17,11 @@ ByteSender::~ByteSender() {
 		StringCchPrintf(status, statusSize, L"shutdown failed: %d\n", WSAGetLastError());
 		closesocket(ListenSocket);
 	}
+}
+
+void ByteSender::setReady(bool b)
+{
+	ready = b;
 }
 
 WCHAR* ByteSender::SetupListener() 
@@ -155,15 +160,24 @@ bool ByteSender::SendDataToClient(SOCKET socket)
 			}
 			else */
 
-			
-			if (recvbuf[0] == 0x61)
+			//StringCchPrintf(status, sizeof(status), L"completed: %d\n", Globals::completed);
+			//OutputDebugString(status);
+			if (Globals::completed) {
 				iSendResult = send(socket, Globals::data, DEFAULT_SENDBUFLEN, 0);
+				//OutputDebugString(L"sent to client\n");
+			}
+			else {
+				char* no = new char[1];
+				no[0] = { 'n' };
+				iSendResult = send(socket, no, 1, 0);
+				//OutputDebugString(L"not ready\n");
+			}
 
 			if (iSendResult == SOCKET_ERROR) {
 				printf("send failed with error: %d\n", WSAGetLastError()); 
 				return false;
 			}
-			printf("Bytes sent: %d\n", iSendResult);
+			//printf("Bytes sent: %d\n", iSendResult);
 		}
 		else if (iResult == 0)
 			printf("Connection closing...\n");

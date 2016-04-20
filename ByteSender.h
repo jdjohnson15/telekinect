@@ -16,6 +16,10 @@ public:
 
 	~ByteSender();
 
+	void setReady(bool b);
+
+	
+
 private:
 
 	struct addrinfo *result = NULL, *ptr = NULL, hints;
@@ -23,7 +27,9 @@ private:
 
 	WCHAR* SetupListener();
 
+	bool ready; //tell when buffer is ready to send;
 
+	
 
 	void ClientHandler(SOCKET ClientSocket);
 	bool SendDataToClient(SOCKET ClientSocket);

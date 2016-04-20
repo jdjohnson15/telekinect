@@ -9,4 +9,5 @@
 
 namespace Globals {
 	extern char* data;
+	extern bool completed;
 }

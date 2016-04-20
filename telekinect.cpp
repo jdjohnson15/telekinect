@@ -8,6 +8,7 @@
 
 
 std::vector<unsigned char> pngBits;
+std::vector<unsigned char> tempBuffer;
 
 /// <summary>
 /// Entry point for the application
@@ -42,11 +43,12 @@ telekinect::telekinect() :
 	m_pNuiSensor(NULL),
 	colorOffsetX(0),
 	colorOffsetY(0),
-	printPNG(false),
+	printPNG(true),
 	netstatus(NO_ATTEMPT)
 {
 	m_depthRGBX = new BYTE[480 * 640 * 4];
 	pngBits = new char[480 * 640 * 8];
+	tempBuffer = new char[480 * 640 * 8];
 	Globals::data = new char[480 * 640 * 8]; //allocate memory on the heap to allow multiple client threads to access same buffer 
 	StringCchPrintf(status, sizeof(status), L"\======init size:%d\n", sizeof(*Globals::data));
 	OutputDebugString(status);
@@ -590,8 +592,9 @@ void telekinect::ProcessDepth() {
 	
 	if (LockedRect.Pitch != 0)
 	{
-
-		SmoothDepth(pngBits, dummy, displayPBits, 640, 480, LockedRect,1, 0);
+		Globals::completed = false;
+		SmoothDepth(Globals::data, dummy, displayPBits, 640, 480, LockedRect,0, 0);
+		Globals::completed = true;
 		
 	}
 	
@@ -616,14 +619,16 @@ void telekinect::Render()
 	//send image buffer (both color and depth) to remote client
 	//server->sendBuffer(pngBits, sizeof(pngBits));
 
-	processData(); //this puts all of the kinect data into the global buffer so all the connected clients can see it.
+	
 	
 	if (netstatus == NO_ATTEMPT)
 		connetionAttempt = std::thread(&telekinect::launchServer, this);
 
-	
+
+	//processData(); //this puts all of the kinect data into the global buffer so all the connected clients can see it.
 
 	WCHAR statusMessage[cStatusMessageMaxLen];
+
 
 	// If the user pressed the screenshot button, save a screenshot
 	if (m_bSaveScreenshot)
@@ -947,7 +952,6 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 	UINT range = maxRange - minRange;
 	if (range <= 0)
 		range = 1;
-
 	while (index < length)
 	{
 		// discard the portion of the depth that contains only the player indexf
@@ -1057,9 +1061,6 @@ void telekinect::SmoothDepth(char* pngBits, BYTE* depthBits, BYTE* displayPBits,
 
 void telekinect::launchServer()
 {
-	StringCchPrintf(status, sizeof(status), L"\launch size:%d\n", sizeof(*Globals::data));
-	OutputDebugString(status);
-
 	netstatus = ATTEMPTING;
 	server = new ByteSender();
 	netstatus = SUCCESSFUL;
@@ -1068,9 +1069,11 @@ void telekinect::launchServer()
 
 void telekinect::processData()
 {
-	for (int i = 0; i < DEFAULT_SENDBUFLEN; ++i){
-		Globals::data[i] = pngBits[i];
+	Globals::completed = false;
+	for (int i = 0; i < DEFAULT_SENDBUFLEN; ++i) {
+		tempBuffer[i] = pngBits[i];
 	}
-	StringCchPrintf(status, sizeof(status), L"test: %x\n", reinterpret_cast<const unsigned char*>(Globals::data[55]));
-	//OutputDebugString(status);
+	Globals::data = tempBuffer;
+	Globals::completed = true;
+	
 }
