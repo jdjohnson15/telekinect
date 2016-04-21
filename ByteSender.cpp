@@ -139,7 +139,7 @@ void ByteSender::ClientHandler(SOCKET socket)
 	// cleanup
 	closesocket(socket);
 	//WSACleanup();
-	OutputDebugString(L"client disconnected\n");
+	printf("shutting down client handler thread\n");
 }
 
 bool ByteSender::SendDataToClient(SOCKET socket) 
@@ -147,7 +147,7 @@ bool ByteSender::SendDataToClient(SOCKET socket)
 
 	// Receive until the peer shuts down the connection
 	do {
-		//OutputDebugString(L"trying to receive\n");
+		printf("trying to receive\n");
 		iResult = recv(socket, recvbuf, recvbuflen, 0);
 		if (iResult > 0) {
 			//process what the client is receiving:
@@ -162,39 +162,27 @@ bool ByteSender::SendDataToClient(SOCKET socket)
 
 			//StringCchPrintf(status, sizeof(status), L"completed: %d\n", Globals::completed);
 			//OutputDebugString(status);
-		//	char* dummy = new char[DEFAULT_SENDBUFLEN];
-			/*for (int i = 0; i < DEFAULT_SENDBUFLEN; i+=4) {
-				dummy[i] = 255;
-				dummy[i + 1] = 0;
-				dummy[i + 2] = 0;
-				dummy[i + 3] = 255;
-			}*/
-			//if (Globals::completed) {
-			if (true) {
+			if (Globals::completed) {
 				iSendResult = send(socket, Globals::data, DEFAULT_SENDBUFLEN, 0);
-				//iSendResult = send(socket, dummy, DEFAULT_SENDBUFLEN, 0);
-				StringCchPrintf(status, statusSize, L"check: %d\n", iSendResult);
-				//OutputDebugString(status);
+				//OutputDebugString(L"sent to client\n");
 			}
 			else {
 				char* no = new char[1];
 				no[0] = { 'n' };
 				iSendResult = send(socket, no, 1, 0);
-				OutputDebugString(L"not ready\n");
+				//OutputDebugString(L"not ready\n");
 			}
 
 			if (iSendResult == SOCKET_ERROR) {
-				StringCchPrintf(status, statusSize, L"send failed with error : %d\n", WSAGetLastError);
-				//OutputDebugString(status);
+				printf("send failed with error: %d\n", WSAGetLastError()); 
 				return false;
 			}
 			//printf("Bytes sent: %d\n", iSendResult);
 		}
 		else if (iResult == 0)
-			OutputDebugString(L"Connection closing...\n");
+			printf("Connection closing...\n");
 		else {
-			StringCchPrintf(status, statusSize, L"recv failed with error : %d\n", WSAGetLastError);
-			OutputDebugString(status);
+			printf("recv failed with error: %d\n", WSAGetLastError());
 			return false;
 		}
 	} while (iResult > 0);
