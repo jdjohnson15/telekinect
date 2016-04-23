@@ -23,16 +23,19 @@ Shader "Custom/RGBDShader" {
 			#ifdef VERTEX // Begin vertex shader
 	 
 	 		// Convert RGB color to hue saturation lightness
-			float rgba32( vec4 color , int range) {
+			vec3 rgb2hsl(vec3 color, float range) {
  
+				float h = 0.0;
+				float s = 0.0;
+				float l = 0.0;
 				float z = 0.0;
 				float r = color.r;
 				float g = color.g;
 				float b = color.b;
 
 				float d = range/3; // distance jump between r g and b
-				if (b > 0.0) {
-					z = (d*2.0) + (b*d);
+				if (r > 0.0) {
+					z = (r*d);
 					//z = range*(3.004 - (r + 2.0) )/3.0;
 				}
 				else if (g > 0.0) {
@@ -40,7 +43,7 @@ Shader "Custom/RGBDShader" {
 					//z = range*(3.004 - (g + 1.0)) / 3.0;
 				}
 				else {
-					z = (r*d);
+					z = (d*2.0) + (b*d);
 					//z = range*(b) / 3.0;
 					//z = 2*d + b*d
 
@@ -48,7 +51,7 @@ Shader "Custom/RGBDShader" {
 				if (color.w < 1.0)
 					z = 0.0;
 
-				/*
+				
 				float cMin = min( r, min( g, b ) );
 				float cMax = max( r, max( g, b ) );
 				
@@ -71,22 +74,12 @@ Shader "Custom/RGBDShader" {
 
 					// Hue
 					//    corresponds with depth
-					if ( r == cMin ) {
-						h = ( g - b ) / cDelta;
-					} else if ( g == cMin ) {
-						h = 2.0 + ( b - r ) / cDelta;
-					} else {
-						h = 4.0 + ( r - g ) / cDelta;
-					}
-
-					if ( h < 0.0) {
-						h += 6.0;
-					}
 					
-					h = h / 6.0;
+					
+					h = z / d;
 				}
-				*/
-				return z/d;
+				
+				return vec3(h, s, l);
 			}
 
 			void main() {
@@ -107,10 +100,10 @@ Shader "Custom/RGBDShader" {
 				//    (Removing this line will use the encoded depth data as color data)
 				vUv.y += 0.5;
 				// Retrieve the hue, saturation, lightness of our color data
-				float z_offset = rgba32( texture2D( _MainTex, vUv ).xyzw , _Range);
+				vec3 hsl = rgb2hsl( texture2D( _MainTex, vUv ).xyzw , _Range);
 				
 				// Position and scale the model
-				vec4 pos = vec4( gl_Vertex.x, gl_Vertex.y, DEPTH_SCALE * z_offset + gl_Vertex.z, MODEL_SCALE );
+				vec4 pos = vec4( gl_Vertex.x, gl_Vertex.y, DEPTH_SCALE * hsl.x + gl_Vertex.z, MODEL_SCALE );
 
 				// Translate the texture to align the color data with the model
 				//    (Removing this line will use the encoded depth data as color data)
@@ -131,8 +124,6 @@ Shader "Custom/RGBDShader" {
 	        #ifdef FRAGMENT // Begin fragment shader
 
 			void main() {
-
-				
 
 				vec4 color = texture2D( _MainTex, vUv );
 				if (color.w == 0.0) discard;

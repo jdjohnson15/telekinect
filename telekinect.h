@@ -139,6 +139,10 @@ private:
 	/// Handle new depth data
 	/// </summary>
 	void                    ProcessDepth();
+	/// <summary>
+	/// tries to better allign the color and depth images
+	/// </summary>
+	void					mapColorToDepth();
 
 	/// <summary>
 	/// Handle drawing content on the screen and exporting files
