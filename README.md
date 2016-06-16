@@ -1,4 +1,4 @@
-# TeleKint (Open Telepresence)
+# TeleKinect (Open Telepresence)
 
 This is a Windows application that uses a Kinect v1 to send live data to client apps over the internet for telepresence and augmented reality applications.
 
